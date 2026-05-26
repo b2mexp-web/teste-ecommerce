@@ -3,271 +3,275 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TechStore Lab - Teste de Tagueamento</title>
+    <title>TechStore Mega Lab - Testes Avançados</title>
     
-    <!-- ================================================================= -->
-    <!-- 1. INICIALIZAÇÃO DO DATA LAYER (SEMPRE NO TOPO)                   -->
-    <!-- ================================================================= -->
     <script>
         window.dataLayer = window.dataLayer || [];
     </script>
-
-    <!-- 💡 COLE O SEU CÓDIGO DO GOOGLE TAG MANAGER (GTM) LOGO ABAIXO DESTA LINHA -->
-    <!-- ================================================================= -->
-
-
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background: #f4f7f6; color: #333; }
-        header { background: #1a2a3a; color: white; padding: 20px; text-align: center; }
-        .container { max-width: 1000px; margin: 30px auto; padding: 0 20px; }
-        .vitrine { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
-        .produto-card { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center; transition: 0.3s; cursor: pointer; }
-        .produto-card:hover { transform: translateY(-5px); box-shadow: 0 6px 12px rgba(0,0,0,0.1); }
-        .produto-card img { max-width: 100%; height: 150px; object-fit: contain; }
-        .price { font-size: 20px; color: #2ecc71; font-weight: bold; margin: 10px 0; }
-        button { background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.2s; }
-        button:hover { background: #2980b9; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; background: #f4f6f9; color: #333; }
+        header { background: #0f172a; color: white; padding: 15px 0; }
+        .nav-container { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; }
+        nav a { color: #cbd5e1; text-decoration: none; margin-left: 20px; font-weight: 500; cursor: pointer; }
+        nav a:hover, nav a.active-menu { color: #38bdf8; }
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
         
-        /* Modal do Produto e Carrinho */
+        /* Vitrine e Cards */
+        .vitrine { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 25px; margin-top: 20px; }
+        .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); text-align: center; cursor: pointer; transition: 0.2s; }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        .card img { width: 100%; height: 180px; object-fit: cover; border-radius: 8px; background: #ebeef2; }
+        .card h3 { font-size: 16px; margin: 15px 0 5px 0; height: 42px; overflow: hidden; }
+        .price { font-size: 20px; color: #059669; font-weight: bold; margin: 10px 0; }
+        
+        button { background: #0284c7; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: 600; width: 100%; }
+        button:hover { background: #0369a1; }
         .page { display: none; }
         .page.active { display: block; }
-        .btn-voltar { background: #7f8c8d; margin-bottom: 20px; width: auto; display: inline-block; }
-        .detalhe-produto { display: flex; gap: 4px; background: white; padding: 30px; border-radius: 8px; }
-        .detalhe-produto img { max-width: 300px; }
         
-        /* Resumo do Carrinho Fixo */
-        .carrinho-status { background: #e67e22; color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-        .carrinho-status button { width: auto; background: white; color: #e67e22; }
+        /* Formulário de Contato */
+        .form-group { margin-bottom: 15px; text-align: left; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
+        .btn-submit { background: #10b981; font-size: 16px; padding: 12px; }
+        .btn-submit:hover { background: #059669; }
+
+        .carrinho-bar { background: #f97316; color: white; padding: 12px; border-radius: 8px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; }
+        .carrinho-bar button { width: auto; background: white; color: #f97316; }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>🛒 TechStore Lab</h1>
-        <p>Ambiente Real para Testes de Data Layer (GA4)</p>
+        <div class="nav-container">
+            <h2 style="margin:0; color:#38bdf8;" onclick="navegar('home')">🛒 TechStore Mega Lab</h2>
+            <nav id="menu-principal">
+                <a onclick="navegar('home')" id="menu-home" class="active-menu">Overview</a>
+                <a onclick="navegar('categoria', 'Videogame')" id="menu-videogame">Videogames</a>
+                <a onclick="navegar('categoria', 'TVs')" id="menu-tvs">TVs</a>
+                <a onclick="navegar('categoria', 'Computadores')" id="menu-computadores">Computadores</a>
+                <a onclick="navegar('contato')" id="menu-contato">Fale Conosco</a>
+            </nav>
+        </div>
     </header>
 
     <div class="container">
-        
-        <!-- Status do Carrinho (Aparece no topo das páginas) -->
-        <div class="carrinho-status">
+        <div class="carrinho-bar">
             <div><strong>Itens no Carrinho:</strong> <span id="cart-count">0</span></div>
-            <button onclick="verCarrinho()">Ir para o Carrinho ➔</button>
+            <button onclick="verCarrinho()">Ver Carrinho & Checkout ➔</button>
         </div>
 
-        <!-- PÁGINA 1: VITRINE -->
-        <section id="page-vitrine" class="page active">
-            <h2>Nossos Produtos</h2>
-            <div class="vitrine" id="vitrine-produtos"></div>
+        <section id="page-home" class="page active">
+            <h2>Destaques do Dia (Todas as Categorias)</h2>
+            <div class="vitrine" id="vitrine-home"></div>
         </section>
 
-        <!-- PÁGINA 2: DETALHE DO PRODUTO -->
-        <section id="page-produto" class="page">
-            <button class="btn-voltar" onclick="navegarPara('vitrine')">← Voltar para Vitrine</button>
-            <div class="detalhe-produto" id="conteudo-produto"></div>
+        <section id="page-categoria" class="page">
+            <h2 id="titulo-categoria">Categoria</h2>
+            <div class="vitrine" id="vitrine-categoria"></div>
         </section>
 
-        <!-- PÁGINA 3: CARRINHO / CHECKOUT -->
-        <section id="page-carrinho" class="page">
-            <button class="btn-voltar" onclick="navegarPara('vitrine')">← Continuar Comprando</button>
+        <section id="page-produto" class="page" style="background:white; padding:30px; border-radius:12px;">
+            <div style="display:flex; gap:40px; flex-wrap:wrap;" id="conteudo-produto"></div>
+        </section>
+
+        <section id="page-carrinho" class="page" style="background:white; padding:30px; border-radius:12px;">
             <h2>Seu Carrinho</h2>
-            <div id="lista-carrinho" style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;"></div>
-            <div style="text-align: right; font-size: 22px; margin-bottom: 20px;">
-                <strong>Total: R$ <span id="total-carrinho">0.00</span></strong>
-            </div>
-            <button style="background: #2ecc71; font-size: 18px; padding: 15px;" onclick="finalizarCompra()">🔒 Finalizar Compra (Disparar Purchase)</button>
+            <div id="lista-carrinho"></div>
+            <h3 style="text-align:right; margin-top:20px;">Total: R$ <span id="total-carrinho">0.00</span></h3>
+            <button onclick="finalizarCompra()" style="background:#10b981; padding:15px; font-size:18px;">Finalizar Compra</button>
         </section>
 
-        <!-- PÁGINA 4: OBRIGADO (COMPRA SUCESSO) -->
-        <section id="page-obrigado" class="page" style="text-align: center; padding: 50px 20px;">
-            <h1 style="color: #2ecc71;">🎉 Compra Realizada com Sucesso!</h1>
-            <p>O evento de <strong>purchase</strong> foi enviado para o seu Data Layer.</p>
-            <p>Verifique o painel do GTM Preview para validar as variáveis.</p>
-            <button class="btn-voltar" onclick="limparEVoltar()" style="margin-top: 20px;">Simular Nova Compra</button>
+        <section id="page-contato" class="page" style="background:white; padding:30px; border-radius:12px; max-width:600px; margin:0 auto;">
+            <h2>Fale Conosco</h2>
+            <p>Preencha o formulário abaixo para testar o tagueamento de leads.</p>
+            <form id="form-contato" onsubmit="enviarFormulario(event)">
+                <div class="form-group">
+                    <label>Nome Completo</label>
+                    <input type="text" id="form-nome" required placeholder="Ex: João Silva">
+                </div>
+                <div class="form-group">
+                    <label>E-mail</label>
+                    <input type="email" id="form-email" required placeholder="joao@email.com">
+                </div>
+                <div class="form-group">
+                    <label>Assunto de Interesse</label>
+                    <select id="form-assunto">
+                        <option value="suporte_tecnico">Suporte Técnico</option>
+                        <option value="parcerias">Parcerias Comerciais</option>
+                        <option value="duvidas_produtos">Dúvidas sobre Produtos</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Mensagem</label>
+                    <textarea id="form-mensagem" rows="4" required></textarea>
+                </div>
+                <button type="submit" class="btn-submit">Enviar Mensagem (Gerar Lead)</button>
+            </form>
         </section>
 
+        <section id="page-obrigado" class="page" style="text-align:center; padding:40px;">
+            <h1 style="color:#10b981;">Sucesso!</h1>
+            <p id="mensagem-sucesso">Ação executada com sucesso e documentada no Data Layer.</p>
+            <button onclick="navegar('home')" style="width:auto; margin-top:20px;">Voltar ao Início</button>
+        </section>
     </div>
 
-    <!-- ================================================================= -->
-    <!-- LÓGICA DO E-COMMERCE E ENVIOS DE DATA LAYER                       -->
-    <!-- ================================================================= -->
     <script>
-        // Banco de dados fictício de produtos
-        const produtos = [
-            { id: "PROD-001", name: "Notebook UltraFast 16GB", price: 4500.00, brand: "LogiTech", category: "Computadores" },
-            { id: "PROD-002", name: "Smartphone Vision X", price: 2999.00, brand: "MacroCorp", category: "Celulares" },
-            { id: "PROD-003", name: "Fone Bluetooth NoiseCancel", price: 799.00, brand: "SoundWave", category: "Áudio" }
-        ];
-
+        let bacoDeDadosProdutos = [];
         let carrinho = [];
 
-        // Inicializa a vitrine
-        function renderVitrine() {
-            const vitrineHtml = produtos.map(p => `
-                <div class="produto-card" onclick="verProduto('${p.id}')">
+        // BUSCA DINÂMICA DO ARQUIVO JSON (ABORDAGEM BIGQUERY SIMULADO)
+        async function inicializarLoja() {
+            try {
+                const resposta = await fetch('produtos.json');
+                bacoDeDadosProdutos = await resposta.json();
+                renderizarVitrineGeral();
+            } catch (erro) {
+                console.error("Erro ao carregar o arquivo produtos.json. Verifique se ele está na mesma pasta.", erro);
+            }
+        }
+
+        function renderizarVitrineGeral() {
+            const html = bacoDeDadosProdutos.map(p => criarCardHTML(p)).join('');
+            document.getElementById('vitrine-home').innerHTML = html;
+        }
+
+        function criarCardHTML(p) {
+            return `
+                <div class="card" onclick="verProduto('${p.id}')">
+                    <img src="${p.image}" alt="${p.name}">
                     <h3>${p.name}</h3>
-                    <p style="color: #7f8c8d;">Marca: ${p.brand}</p>
+                    <p style="color:#64748b; font-size:12px; margin:0;">${p.brand} | ${p.category}</p>
                     <div class="price">R$ ${p.price.toFixed(2)}</div>
-                    <button onclick="event.stopPropagation(); adicionarAoCarrinho('${p.id}')">Adicionar ao Carrinho</button>
-                </div>
-            `).join('');
-            document.getElementById('vitrine-produtos').innerHTML = vitrineHtml;
-        }
-
-        // Navegação simples entre as telas simuladas
-        function navegarPara(pageId) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById(`page-${pageId}`).classList.add('active');
-            window.scrollTo(0,0);
-        }
-
-        // EVENTO 1: Ver Produto (view_item)
-        function verProduto(id) {
-            const prod = produtos.find(p => p.id === id);
-            
-            // 🛑 DATA LAYER: view_item (Padrão GA4)
-            window.dataLayer.push({ 'ecommerce': null }); // Limpa o objeto anterior
-            window.dataLayer.push({
-                'event': 'view_item',
-                'ecommerce': {
-                    'currency': 'BRL',
-                    'value': prod.price,
-                    'items': [{
-                        'item_id': prod.id,
-                        'item_name': prod.name,
-                        'price': prod.price,
-                        'item_brand': prod.brand,
-                        'item_category': prod.category,
-                        'quantity': 1
-                    }]
-                }
-            });
-
-            // Renderiza a página do produto
-            document.getElementById('conteudo-produto').innerHTML = `
-                <div style="flex: 1;">
-                    <h2>${prod.name}</h2>
-                    <p><strong>Marca:</strong> ${prod.brand} | <strong>Categoria:</strong> ${prod.category}</p>
-                    <div class="price">R$ ${prod.price.toFixed(2)}</div>
-                    <p>Este é um produto fictício criado para validar a leitura de dados do Google Tag Manager via Data Layer estruturado.</p>
-                    <button onclick="adicionarAoCarrinho('${prod.id}')" style="background:#e67e22;">🛒 Adicionar ao Carrinho</button>
+                    <button onclick="event.stopPropagation(); adicionarAoCarrinho('${p.id}')">Adicionar</button>
                 </div>
             `;
-            navegarPara('produto');
         }
 
-        // EVENTO 2: Adicionar ao Carrinho (add_to_cart)
-        function adicionarAoCarrinho(id) {
-            const prod = produtos.find(p => p.id === id);
-            carrinho.push(prod);
+        // NAVEGAÇÃO ENTRE PÁGINAS E ATUALIZAÇÃO DE MENUS
+        function navegar(pagina, parametro = null) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('#menu-principal a').forEach(a => a.classList.remove('active-menu'));
             
-            // Atualiza interface do topo
+            document.getElementById(`page-${pagina}`).classList.add('active');
+            window.scrollTo(0,0);
+
+            if (pagina === 'home') {
+                document.getElementById('menu-home').classList.add('active-menu');
+            } else if (pagina === 'contato') {
+                document.getElementById('menu-contato').classList.add('active-menu');
+            } else if (pagina === 'categoria') {
+                document.getElementById(`menu-${parametro.toLowerCase()}`).classList.add('active-menu');
+                document.getElementById('titulo-categoria').innerText = `Categoria: ${parametro}`;
+                const filtrados = bacoDeDadosProdutos.filter(p => p.category.toLowerCase() === parametro.toLowerCase());
+                document.getElementById('vitrine-categoria').innerHTML = filtrados.map(p => criarCardHTML(p)).join('');
+                
+                // DATA LAYER EXTRA: view_item_list (Padrão GA4 para quando o usuário vê uma lista/categoria)
+                window.dataLayer.push({ 'ecommerce': null });
+                window.dataLayer.push({
+                    'event': 'view_item_list',
+                    'ecommerce': {
+                        'item_list_name': parametro,
+                        'items': filtrados.map((p, idx) => ({ 'item_id': p.id, 'item_name': p.name, 'price': p.price, 'index': idx + 1 }))
+                    }
+                });
+            }
+        }
+
+        function verProduto(id) {
+            const prod = bacoDeDadosProdutos.find(p => p.id === id);
+            
+            window.dataLayer.push({ 'ecommerce': null });
+            window.dataLayer.push({
+                'event': 'view_item',
+                'ecommerce': { 'currency': 'BRL', 'value': prod.price, 'items': [{ 'item_id': prod.id, 'item_name': prod.name, 'price': prod.price, 'item_brand': prod.brand, 'item_category': prod.category, 'quantity': 1 }] }
+            });
+
+            document.getElementById('conteudo-produto').innerHTML = `
+                <img src="${prod.image}" style="max-width:400px; width:100%; border-radius:12px; object-fit:cover;">
+                <div style="flex:1; min-width:300px;">
+                    <button onclick="navegar('home')" style="width:auto; background:#64748b; margin-bottom:15px;">← Voltar</button>
+                    <h2>${prod.name}</h2>
+                    <p><strong>Marca:</strong> ${prod.brand} | <strong>Categoria:</strong> ${prod.category}</p>
+                    <div class="price" style="font-size:28px;">R$ ${prod.price.toFixed(2)}</div>
+                    <button onclick="adicionarAoCarrinho('${prod.id}')" style="background:#f97316; font-size:18px; padding:12px;">🛒 Adicionar ao Carrinho</button>
+                </div>
+            `;
+            navegar('produto');
+        }
+
+        function adicionarAoCarrinho(id) {
+            const prod = bacoDeDadosProdutos.find(p => p.id === id);
+            carrinho.push(prod);
             document.getElementById('cart-count').innerText = carrinho.length;
 
-            // 🛑 DATA LAYER: add_to_cart (Padrão GA4)
             window.dataLayer.push({ 'ecommerce': null });
             window.dataLayer.push({
                 'event': 'add_to_cart',
-                'ecommerce': {
-                    'currency': 'BRL',
-                    'value': prod.price,
-                    'items': [{
-                        'item_id': prod.id,
-                        'item_name': prod.name,
-                        'price': prod.price,
-                        'item_brand': prod.brand,
-                        'item_category': prod.category,
-                        'quantity': 1
-                    }]
-                }
+                'ecommerce': { 'currency': 'BRL', 'value': prod.price, 'items': [{ 'item_id': prod.id, 'item_name': prod.name, 'price': prod.price, 'item_brand': prod.brand, 'item_category': prod.category, 'quantity': 1 }] }
             });
-
-            alert(`"${prod.name}" foi adicionado! Evento 'add_to_cart' disparado.`);
+            alert(`"${prod.name}" adicionado!`);
         }
 
-        // EVENTO 3: Visualizar Carrinho / Iniciar Checkout (view_cart)
         function verCarrinho() {
-            if(carrinho.length === 0) {
-                alert("Seu carrinho está vazio!");
-                return;
-            }
-
+            if(carrinho.length === 0) { alert("Carrinho vazio!"); return; }
             const total = carrinho.reduce((sum, item) => sum + item.price, 0);
-            
-            // Mapeia os itens no formato exigido pelo GA4
-            const itensGTM = carrinho.map(prod => ({
-                'item_id': prod.id,
-                'item_name': prod.name,
-                'price': prod.price,
-                'item_brand': prod.brand,
-                'item_category': prod.category,
-                'quantity': 1
-            }));
 
-            // 🛑 DATA LAYER: view_cart
             window.dataLayer.push({ 'ecommerce': null });
             window.dataLayer.push({
                 'event': 'view_cart',
-                'ecommerce': {
-                    'currency': 'BRL',
-                    'value': total,
-                    'items': itensGTM
-                }
+                'ecommerce': { 'currency': 'BRL', 'value': total, 'items': carrinho.map(p => ({ 'item_id': p.id, 'item_name': p.name, 'price': p.price, 'quantity': 1 })) }
             });
 
-            // Renderiza tela do carrinho
-            const htmlCarrinho = carrinho.map(item => `
-                <div style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding:10px 0;">
-                    <span><strong>${item.name}</strong> (${item.category})</span>
-                    <span>R$ ${item.price.toFixed(2)}</span>
+            document.getElementById('lista-carrinho').innerHTML = carrinho.map(p => `
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #e2e8f0;">
+                    <div style="display:flex; align-items:center; gap:15px;">
+                        <img src="${p.image}" style="width:50px; height:50px; object-fit:cover; border-radius:6px;">
+                        <span><strong>${p.name}</strong></span>
+                    </div>
+                    <strong>R$ ${p.price.toFixed(2)}</strong>
                 </div>
             `).join('');
-            
-            document.getElementById('lista-carrinho').innerHTML = htmlCarrinho;
             document.getElementById('total-carrinho').innerText = total.toFixed(2);
-            
-            navegarPara('carrinho');
+            navegar('carrinho');
         }
 
-        // EVENTO 4: Finalizar Compra (purchase)
         function finalizarCompra() {
             const total = carrinho.reduce((sum, item) => sum + item.price, 0);
-            const transactionId = "T-" + Math.floor(100000 + Math.random() * 900000); // Gera ID aleatório da transação
+            const transId = "T-" + Math.floor(100000 + Math.random() * 900000);
 
-            const itensGTM = carrinho.map(prod => ({
-                'item_id': prod.id,
-                'item_name': prod.name,
-                'price': prod.price,
-                'item_brand': prod.brand,
-                'item_category': prod.category,
-                'quantity': 1
-            }));
-
-            // 🛑 DATA LAYER: purchase
             window.dataLayer.push({ 'ecommerce': null });
             window.dataLayer.push({
                 'event': 'purchase',
-                'ecommerce': {
-                    'transaction_id': transactionId,
-                    'value': total,
-                    'tax': 0.00,
-                    'shipping': 0.00,
-                    'currency': 'BRL',
-                    'items': itensGTM
-                }
+                'ecommerce': { 'transaction_id': transId, 'value': total, 'tax': 0, 'shipping': 0, 'currency': 'BRL', 'items': carrinho.map(p => ({ 'item_id': p.id, 'item_name': p.name, 'price': p.price, 'quantity': 1 })) }
             });
 
-            navegarPara('obrigado');
-        }
-
-        function limparEVoltar() {
             carrinho = [];
             document.getElementById('cart-count').innerText = 0;
-            navegarPara('vitrine');
+            document.getElementById('mensagem-sucesso').innerHTML = `Sua compra de ID <strong>${transId}</strong> foi processada! Verifique o evento <code>purchase</code> no seu Data Layer.`;
+            navegar('obrigado');
         }
 
-        // Inicia o script exibindo os produtos na tela
-        renderVitrine();
+        // 🛑 NOVO ELEMENTO DE TAGUEAMENTO: FORMULÁRIO DE CONTATO (Gera Leads)
+        function enviarFormulario(event) {
+            event.preventDefault(); // Impede o recarregamento da página
+
+            const assuntoSelecionado = document.getElementById('form-assunto').value;
+
+            // Envia evento customizado para o Data Layer focado em Lead Rastreável
+            window.dataLayer.push({
+                'event': 'generate_lead', // Nome do evento padrão recomendado pelo Google
+                'lead_form_name': 'Contato Institucional',
+                'lead_form_subject': assuntoSelecionado
+            });
+
+            document.getElementById('form-contato').reset();
+            document.getElementById('mensagem-sucesso').innerText = "Sua mensagem foi enviada! O evento 'generate_lead' foi inserido no Data Layer com o assunto escolhido.";
+            navegar('obrigado');
+        }
+
+        inicializarLoja();
     </script>
 </body>
 </html>
