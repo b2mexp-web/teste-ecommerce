@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechStore Lab - Teste de Tagueamento</title>
+    
+    <!-- ================================================================= -->
+    <!-- 1. INICIALIZAÇÃO DO DATA LAYER (SEMPRE NO TOPO)                   -->
+    <!-- ================================================================= -->
+    <script>
+        window.dataLayer = window.dataLayer || [];
+    </script>
+
+    <!-- 💡 COLE O SEU CÓDIGO DO GOOGLE TAG MANAGER (GTM) LOGO ABAIXO DESTA LINHA -->
+    <!-- ================================================================= -->
+
+
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background: #f4f7f6; color: #333; }
+        header { background: #1a2a3a; color: white; padding: 20px; text-align: center; }
+        .container { max-width: 1000px; margin: 30px auto; padding: 0 20px; }
+        .vitrine { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .produto-card { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center; transition: 0.3s; cursor: pointer; }
+        .produto-card:hover { transform: translateY(-5px); box-shadow: 0 6px 12px rgba(0,0,0,0.1); }
+        .produto-card img { max-width: 100%; height: 150px; object-fit: contain; }
+        .price { font-size: 20px; color: #2ecc71; font-weight: bold; margin: 10px 0; }
+        button { background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.2s; }
+        button:hover { background: #2980b9; }
+        
+        /* Modal do Produto e Carrinho */
+        .page { display: none; }
+        .page.active { display: block; }
+        .btn-voltar { background: #7f8c8d; margin-bottom: 20px; width: auto; display: inline-block; }
+        .detalhe-produto { display: flex; gap: 4px; background: white; padding: 30px; border-radius: 8px; }
+        .detalhe-produto img { max-width: 300px; }
+        
+        /* Resumo do Carrinho Fixo */
+        .carrinho-status { background: #e67e22; color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .carrinho-status button { width: auto; background: white; color: #e67e22; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🛒 TechStore Lab</h1>
+        <p>Ambiente Real para Testes de Data Layer (GA4)</p>
+    </header>
+
+    <div class="container">
+        
+        <!-- Status do Carrinho (Aparece no topo das páginas) -->
+        <div class="carrinho-status">
+            <div><strong>Itens no Carrinho:</strong> <span id="cart-count">0</span></div>
+            <button onclick="verCarrinho()">Ir para o Carrinho ➔</button>
+        </div>
+
+        <!-- PÁGINA 1: VITRINE -->
+        <section id="page-vitrine" class="page active">
+            <h2>Nossos Produtos</h2>
+            <div class="vitrine" id="vitrine-produtos"></div>
+        </section>
+
+        <!-- PÁGINA 2: DETALHE DO PRODUTO -->
+        <section id="page-produto" class="page">
+            <button class="btn-voltar" onclick="navegarPara('vitrine')">← Voltar para Vitrine</button>
+            <div class="detalhe-produto" id="conteudo-produto"></div>
+        </section>
+
+        <!-- PÁGINA 3: CARRINHO / CHECKOUT -->
+        <section id="page-carrinho" class="page">
+            <button class="btn-voltar" onclick="navegarPara('vitrine')">← Continuar Comprando</button>
+            <h2>Seu Carrinho</h2>
+            <div id="lista-carrinho" style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;"></div>
+            <div style="text-align: right; font-size: 22px; margin-bottom: 20px;">
+                <strong>Total: R$ <span id="total-carrinho">0.00</span></strong>
+            </div>
+            <button style="background: #2ecc71; font-size: 18px; padding: 15px;" onclick="finalizarCompra()">🔒 Finalizar Compra (Disparar Purchase)</button>
+        </section>
+
+        <!-- PÁGINA 4: OBRIGADO (COMPRA SUCESSO) -->
+        <section id="page-obrigado" class="page" style="text-align: center; padding: 50px 20px;">
+            <h1 style="color: #2ecc71;">🎉 Compra Realizada com Sucesso!</h1>
+            <p>O evento de <strong>purchase</strong> foi enviado para o seu Data Layer.</p>
+            <p>Verifique o painel do GTM Preview para validar as variáveis.</p>
+            <button class="btn-voltar" onclick="limparEVoltar()" style="margin-top: 20px;">Simular Nova Compra</button>
+        </section>
+
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- LÓGICA DO E-COMMERCE E ENVIOS DE DATA LAYER                       -->
+    <!-- ================================================================= -->
+    <script>
+        // Banco de dados fictício de produtos
+        const produtos = [
+            { id: "PROD-001", name: "Notebook UltraFast 16GB", price: 4500.00, brand: "LogiTech", category: "Computadores" },
+            { id: "PROD-002", name: "Smartphone Vision X", price: 2999.00, brand: "MacroCorp", category: "Celulares" },
+            { id: "PROD-003", name: "Fone Bluetooth NoiseCancel", price: 799.00, brand: "SoundWave", category: "Áudio" }
+        ];
+
+        let carrinho = [];
+
+        // Inicializa a vitrine
+        function renderVitrine() {
+            const vitrineHtml = produtos.map(p => `
+                <div class="produto-card" onclick="verProduto('${p.id}')">
+                    <h3>${p.name}</h3>
+                    <p style="color: #7f8c8d;">Marca: ${p.brand}</p>
+                    <div class="price">R$ ${p.price.toFixed(2)}</div>
+                    <button onclick="event.stopPropagation(); adicionarAoCarrinho('${p.id}')">Adicionar ao Carrinho</button>
+                </div>
+            `).join('');
+            document.getElementById('vitrine-produtos').innerHTML = vitrineHtml;
+        }
+
+        // Navegação simples entre as telas simuladas
+        function navegarPara(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(`page-${pageId}`).classList.add('active');
+            window.scrollTo(0,0);
+        }
+
+        // EVENTO 1: Ver Produto (view_item)
+        function verProduto(id) {
+            const prod = produtos.find(p => p.id === id);
+            
+            // 🛑 DATA LAYER: view_item (Padrão GA4)
+            window.dataLayer.push({ 'ecommerce': null }); // Limpa o objeto anterior
+            window.dataLayer.push({
+                'event': 'view_item',
+                'ecommerce': {
+                    'currency': 'BRL',
+                    'value': prod.price,
+                    'items': [{
+                        'item_id': prod.id,
+                        'item_name': prod.name,
+                        'price': prod.price,
+                        'item_brand': prod.brand,
+                        'item_category': prod.category,
+                        'quantity': 1
+                    }]
+                }
+            });
+
+            // Renderiza a página do produto
+            document.getElementById('conteudo-produto').innerHTML = `
+                <div style="flex: 1;">
+                    <h2>${prod.name}</h2>
+                    <p><strong>Marca:</strong> ${prod.brand} | <strong>Categoria:</strong> ${prod.category}</p>
+                    <div class="price">R$ ${prod.price.toFixed(2)}</div>
+                    <p>Este é um produto fictício criado para validar a leitura de dados do Google Tag Manager via Data Layer estruturado.</p>
+                    <button onclick="adicionarAoCarrinho('${prod.id}')" style="background:#e67e22;">🛒 Adicionar ao Carrinho</button>
+                </div>
+            `;
+            navegarPara('produto');
+        }
+
+        // EVENTO 2: Adicionar ao Carrinho (add_to_cart)
+        function adicionarAoCarrinho(id) {
+            const prod = produtos.find(p => p.id === id);
+            carrinho.push(prod);
+            
+            // Atualiza interface do topo
+            document.getElementById('cart-count').innerText = carrinho.length;
+
+            // 🛑 DATA LAYER: add_to_cart (Padrão GA4)
+            window.dataLayer.push({ 'ecommerce': null });
+            window.dataLayer.push({
+                'event': 'add_to_cart',
+                'ecommerce': {
+                    'currency': 'BRL',
+                    'value': prod.price,
+                    'items': [{
+                        'item_id': prod.id,
+                        'item_name': prod.name,
+                        'price': prod.price,
+                        'item_brand': prod.brand,
+                        'item_category': prod.category,
+                        'quantity': 1
+                    }]
+                }
+            });
+
+            alert(`"${prod.name}" foi adicionado! Evento 'add_to_cart' disparado.`);
+        }
+
+        // EVENTO 3: Visualizar Carrinho / Iniciar Checkout (view_cart)
+        function verCarrinho() {
+            if(carrinho.length === 0) {
+                alert("Seu carrinho está vazio!");
+                return;
+            }
+
+            const total = carrinho.reduce((sum, item) => sum + item.price, 0);
+            
+            // Mapeia os itens no formato exigido pelo GA4
+            const itensGTM = carrinho.map(prod => ({
+                'item_id': prod.id,
+                'item_name': prod.name,
+                'price': prod.price,
+                'item_brand': prod.brand,
+                'item_category': prod.category,
+                'quantity': 1
+            }));
+
+            // 🛑 DATA LAYER: view_cart
+            window.dataLayer.push({ 'ecommerce': null });
+            window.dataLayer.push({
+                'event': 'view_cart',
+                'ecommerce': {
+                    'currency': 'BRL',
+                    'value': total,
+                    'items': itensGTM
+                }
+            });
+
+            // Renderiza tela do carrinho
+            const htmlCarrinho = carrinho.map(item => `
+                <div style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding:10px 0;">
+                    <span><strong>${item.name}</strong> (${item.category})</span>
+                    <span>R$ ${item.price.toFixed(2)}</span>
+                </div>
+            `).join('');
+            
+            document.getElementById('lista-carrinho').innerHTML = htmlCarrinho;
+            document.getElementById('total-carrinho').innerText = total.toFixed(2);
+            
+            navegarPara('carrinho');
+        }
+
+        // EVENTO 4: Finalizar Compra (purchase)
+        function finalizarCompra() {
+            const total = carrinho.reduce((sum, item) => sum + item.price, 0);
+            const transactionId = "T-" + Math.floor(100000 + Math.random() * 900000); // Gera ID aleatório da transação
+
+            const itensGTM = carrinho.map(prod => ({
+                'item_id': prod.id,
+                'item_name': prod.name,
+                'price': prod.price,
+                'item_brand': prod.brand,
+                'item_category': prod.category,
+                'quantity': 1
+            }));
+
+            // 🛑 DATA LAYER: purchase
+            window.dataLayer.push({ 'ecommerce': null });
+            window.dataLayer.push({
+                'event': 'purchase',
+                'ecommerce': {
+                    'transaction_id': transactionId,
+                    'value': total,
+                    'tax': 0.00,
+                    'shipping': 0.00,
+                    'currency': 'BRL',
+                    'items': itensGTM
+                }
+            });
+
+            navegarPara('obrigado');
+        }
+
+        function limparEVoltar() {
+            carrinho = [];
+            document.getElementById('cart-count').innerText = 0;
+            navegarPara('vitrine');
+        }
+
+        // Inicia o script exibindo os produtos na tela
+        renderVitrine();
+    </script>
+</body>
+</html>
